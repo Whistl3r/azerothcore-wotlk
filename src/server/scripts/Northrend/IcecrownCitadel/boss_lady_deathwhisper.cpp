@@ -384,8 +384,23 @@ public:
 
                         std::random_device rd;
                         std::shuffle(begin, end, std::default_random_engine{rd()});
-
-                        for (uint8 i = 0; i < RAID_MODE<uint8>(0, 1, 1, 3) && i < validPlayers.size(); i++)
+                        uint8 ladyMindControlCount = 3;
+                        if (me->GetMap()->GetDifficulty() == 3)
+                        {
+                            if (me->GetMap()->GetPlayersCountExceptGMs() < 9)
+                            {
+                                ladyMindControlCount=1;
+                            }
+                            else if (me->GetMap()->GetPlayersCountExceptGMs() < 17)
+                            {
+                                ladyMindControlCount=2;
+                            }
+                            else
+                            {
+                                ladyMindControlCount=3;
+                            }
+                        }                                                
+                        for (uint8 i = 0; i < RAID_MODE<uint8>(0, 1, 1, ladyMindControlCount) && i < validPlayers.size(); i++)
                         {
                             Unit* target = validPlayers[i];
                             me->CastSpell(target, SPELL_DOMINATE_MIND_25, true);
