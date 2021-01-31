@@ -422,6 +422,8 @@ public:
             if (type != POINT_MOTION_TYPE && type != EFFECT_MOTION_TYPE)
                 return;
 
+            int32 sindyTombs10n=2,sindyTombs25n=5,sindyTombs10hc=2,sindyTombs25hc=6;
+
             switch (point)
             {
                 case POINT_FROSTWYRM_LAND:
@@ -439,8 +441,48 @@ public:
                 case POINT_TAKEOFF:
                     events.ScheduleEvent(EVENT_AIR_MOVEMENT, 0);
                     break;
-                case POINT_AIR_PHASE:
-                    me->CastCustomSpell(SPELL_ICE_TOMB_TARGET, SPELLVALUE_MAX_TARGETS, RAID_MODE<int32>(2, 5, 2, 6), nullptr);
+                case POINT_AIR_PHASE:                    
+                    switch( me->GetMap()->GetDifficulty() )
+                    {
+                        case 0:                            
+                            if (me->GetMap()->GetPlayersCountExceptGMs() < 3)
+                            {
+                                sindyTombs10n=me->GetMap()->GetPlayersCountExceptGMs()-1;
+                                if (sindyTombs10n <= 0)
+                                    sindyTombs10n=0;
+                            }
+                            break;
+                        case 1:
+                            if (me->GetMap()->GetPlayersCountExceptGMs() < 7)
+                            {
+                                sindyTombs25n=me->GetMap()->GetPlayersCountExceptGMs()-2; 
+                                if (sindyTombs25n <= 0)
+                                    sindyTombs25n=1;                              
+                            }
+                            break;
+                        case 2:
+                             if (me->GetMap()->GetPlayersCountExceptGMs() < 3)
+                            {
+                                sindyTombs10hc=me->GetMap()->GetPlayersCountExceptGMs()-1; 
+                                if (sindyTombs10hc <= 0)
+                                    sindyTombs10hc=1;                                
+                            }
+                            break;
+                        case 3:
+                           if (me->GetMap()->GetPlayersCountExceptGMs() < 8)
+                            {
+                                sindyTombs25hc=me->GetMap()->GetPlayersCountExceptGMs()-2;  
+                                if (sindyTombs25hc <= 0)
+                                    sindyTombs25hc=1;                              
+                            }
+                            break;
+                    }
+                    if (sindyTombs10n != 0)
+                    {
+                        me->CastCustomSpell(SPELL_ICE_TOMB_TARGET, SPELLVALUE_MAX_TARGETS, RAID_MODE<int32>(sindyTombs10n, sindyTombs25n, sindyTombs10hc, sindyTombs25hc), nullptr);
+                    }
+                    
+
                     me->SetFacingTo(float(M_PI));
                     events.ScheduleEvent(EVENT_AIR_MOVEMENT_FAR, 0); // won't be processed during cast time anyway, so 0
                     events.ScheduleEvent(EVENT_FROST_BOMB, 7000);
