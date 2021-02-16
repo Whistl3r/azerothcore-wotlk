@@ -57,62 +57,65 @@ public:
 
         void Update(uint32 diff) override
         {
-            checkTimer += diff;
-            if (checkTimer >= 60000)
+            if (sWorld->getBoolConfig(CONFIG_WINTERGRASP_ENABLE))
             {
-                checkTimer -= 60000; // one minute
-                if (Battlefield* bf = sBattlefieldMgr->GetBattlefieldByBattleId(BATTLEFIELD_BATTLEID_WG))
+                checkTimer += diff;
+                if (checkTimer >= 60000)
                 {
-                    if (!bf->IsWarTime())
+                    checkTimer -= 60000; // one minute
+                    if (Battlefield* bf = sBattlefieldMgr->GetBattlefieldByBattleId(BATTLEFIELD_BATTLEID_WG))
                     {
-                        if (bf->GetTimer() <= (16 * MINUTE * IN_MILLISECONDS) && bf->GetTimer() >= (15 * MINUTE * IN_MILLISECONDS))
+                        if (!bf->IsWarTime())
                         {
-                            Map::PlayerList const& PlayerList = instance->GetPlayers();
-                            if (!PlayerList.isEmpty())
-                                for (Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
-                                    if (Player* player = i->GetSource())
-                                        player->MonsterTextEmote("This instance will reset in 15 minutes.", 0, true);
-                        }
-                        else if (bf->GetTimer() <= (10 * MINUTE * IN_MILLISECONDS) && bf->GetTimer() >= (9 * MINUTE * IN_MILLISECONDS))
-                        {
-                            for (uint8 i = 0; i < MAX_ENCOUNTER; ++i)
-                                if (Creature* cr = instance->GetCreature(bossGUIDs[i]))
-                                    if (!cr->IsInCombat())
-                                    {
-                                        cr->RemoveAllAuras();
-                                        if (Aura* aur = cr->AddAura(SPELL_STONED_AURA, cr))
+                            if (bf->GetTimer() <= (16 * MINUTE * IN_MILLISECONDS) && bf->GetTimer() >= (15 * MINUTE * IN_MILLISECONDS))
+                            {
+                                Map::PlayerList const& PlayerList = instance->GetPlayers();
+                                if (!PlayerList.isEmpty())
+                                    for (Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
+                                        if (Player* player = i->GetSource())
+                                            player->MonsterTextEmote("This instance will reset in 15 minutes.", 0, true);
+                            }
+                            else if (bf->GetTimer() <= (10 * MINUTE * IN_MILLISECONDS) && bf->GetTimer() >= (9 * MINUTE * IN_MILLISECONDS))
+                            {
+                                for (uint8 i = 0; i < MAX_ENCOUNTER; ++i)
+                                    if (Creature* cr = instance->GetCreature(bossGUIDs[i]))
+                                        if (!cr->IsInCombat())
                                         {
-                                            aur->SetMaxDuration(60 * MINUTE * IN_MILLISECONDS);
-                                            aur->SetDuration(60 * MINUTE * IN_MILLISECONDS);
+                                            cr->RemoveAllAuras();
+                                            if (Aura* aur = cr->AddAura(SPELL_STONED_AURA, cr))
+                                            {
+                                                aur->SetMaxDuration(60 * MINUTE * IN_MILLISECONDS);
+                                                aur->SetDuration(60 * MINUTE * IN_MILLISECONDS);
+                                            }
                                         }
-                                    }
 
-                            stoned = true;
-                        }
-                        else if (bf->GetTimer() <= (2 * MINUTE * IN_MILLISECONDS) && bf->GetTimer() > (MINUTE * IN_MILLISECONDS))
-                        {
-                            Map::PlayerList const& PlayerList = instance->GetPlayers();
-                            if (!PlayerList.isEmpty())
-                                for (Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
-                                    if (Player* player = i->GetSource())
-                                        player->MonsterTextEmote("This instance is about to reset. Prepare to be removed.", 0, true);
-                        }
-                        else if (bf->GetTimer() <= MINUTE * IN_MILLISECONDS)
-                        {
-                            for (uint8 i = 0; i < MAX_ENCOUNTER; ++i)
-                                if (Creature* cr = instance->GetCreature(bossGUIDs[i]))
-                                    if (cr->IsInCombat() && cr->AI())
-                                        cr->AI()->EnterEvadeMode();
+                                stoned = true;
+                            }
+                            else if (bf->GetTimer() <= (2 * MINUTE * IN_MILLISECONDS) && bf->GetTimer() > (MINUTE * IN_MILLISECONDS))
+                            {
+                                Map::PlayerList const& PlayerList = instance->GetPlayers();
+                                if (!PlayerList.isEmpty())
+                                    for (Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
+                                        if (Player* player = i->GetSource())
+                                            player->MonsterTextEmote("This instance is about to reset. Prepare to be removed.", 0, true);
+                            }
+                            else if (bf->GetTimer() <= MINUTE * IN_MILLISECONDS)
+                            {
+                                for (uint8 i = 0; i < MAX_ENCOUNTER; ++i)
+                                    if (Creature* cr = instance->GetCreature(bossGUIDs[i]))
+                                        if (cr->IsInCombat() && cr->AI())
+                                            cr->AI()->EnterEvadeMode();
 
-                            Map::PlayerList const& PlayerList = instance->GetPlayers();
-                            if (!PlayerList.isEmpty())
-                                for (Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
-                                    if (Player* player = i->GetSource())
-                                        player->TeleportTo(player->m_homebindMapId, player->m_homebindX, player->m_homebindY, player->m_homebindZ, player->GetOrientation());
+                                Map::PlayerList const& PlayerList = instance->GetPlayers();
+                                if (!PlayerList.isEmpty())
+                                    for (Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
+                                        if (Player* player = i->GetSource())
+                                            player->TeleportTo(player->m_homebindMapId, player->m_homebindX, player->m_homebindY, player->m_homebindZ, player->GetOrientation());
+                            }
                         }
                     }
                 }
-            }
+            }            
         }
 
         bool IsEncounterInProgress() const override
